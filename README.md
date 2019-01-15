@@ -83,6 +83,6 @@ public int GetDay();
 public int GetWeek();
 //获取自1970-1-1以来的毫秒总数
 public double GetMillisecondsTime();
-//获取自当前时间字符串
+//获取当前时间字符串
 public string GetLocalTimeStr();
 ```
