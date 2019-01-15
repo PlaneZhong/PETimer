@@ -21,10 +21,12 @@ pt.AddFrameTask(FrameTask, 100, 3);
 int tempID = pt.AddTimeTask((int tid) => {
     Debug.Log("定时等待替换......");
 }, 1, PETimeUnit.Second, 0);
+
 //定时任务替换
 pt.ReplaceTimeTask(tempID, (int tid) => {
     Debug.Log("定时任务替换完成......");
 }, 2, PETimeUnit.Second, 0);
+
 //定时任务删除
 pt.DeleteTimeTask(tempID);
 
