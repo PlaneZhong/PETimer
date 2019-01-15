@@ -10,7 +10,7 @@
 # 使用示意：
 
 ### 1.Unity当中使用
-```
+``` C#
 //实例化计时类
 PETimer pt = new PETimer();
 //时间定时任务
@@ -36,7 +36,7 @@ void Update() {
 
 ### 2.服务器中使用
 第一种用法：运行线程检测并处理任务（类似于在Unity中使用）
-```
+``` C#
 PETimer pt = new PETimer();
 //必须在While循环中调用pt.Update()来驱动计时
 while (true) {
@@ -44,7 +44,7 @@ while (true) {
 }
 ```
 第二种用法：独立线程检测并处理任务
-```
+``` C#
 //在PETimer实例化时，传入检测间隔参数（单位毫秒）
 PETimer pt = new PETimer(100);
 ```
@@ -52,7 +52,7 @@ PETimer pt = new PETimer(100);
 
 ### 3.可设置定时回调处理器
 当定时任务的回调处理可通过设置处理Handle来覆盖默认的执行处理(一般用于独立线程计时)
-```
+``` C#
 pt.SetHandle((Action<int> cb, int tid) => {
     //覆盖默认的回调处理
     //TODO
@@ -61,14 +61,14 @@ pt.SetHandle((Action<int> cb, int tid) => {
 
 ### 4.日志工具接口
 通过SetLog(Action<string> log)接口，可以传入第三方的日志显示工具。（下面以Unity为例，实现在Unity编辑器控制台中输出日志信息）
-```
+``` C#
 pt.SetLog((string info) => {
     Debug.Log("LogInfo:" + info);
 });
 ```
 
 ### 5.其它常用API
-```
+``` C#
 //获取本地DateTime
 public DateTime GetLocalDate();
 //获取年份
