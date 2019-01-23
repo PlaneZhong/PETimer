@@ -38,14 +38,14 @@ public class PETimer {
         public int tid;
         public Action<int> callback;
         public int destFrame;
-        public int value;
+        public int delay;
         public int count;
 
-        public PEFrameTask(int tid, Action<int> callback, int destFrame, int value, int count) {
+        public PEFrameTask(int tid, Action<int> callback, int destFrame, int delay, int count) {
             this.tid = tid;
             this.callback = callback;
             this.destFrame = destFrame;
-            this.value = value;
+            this.delay = delay;
             this.count = count;
         }
     }
@@ -57,6 +57,8 @@ public class PETimer {
     private DateTime startDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
     private int tid;
     private List<int> tidLst = new List<int>();
+    private List<int> recTidLst = new List<int>();
+
     private double nowTime;
     private List<PETimeTask> tmpTimerLst = new List<PETimeTask>();
     private List<PETimeTask> taskTimerLst = new List<PETimeTask>();
@@ -68,6 +70,7 @@ public class PETimer {
     #region Main Functions
     public PETimer(int interval = 0) {
         tidLst.Clear();
+        recTidLst.Clear();
         tmpTimerLst.Clear();
         taskTimerLst.Clear();
 
@@ -84,6 +87,10 @@ public class PETimer {
     public void Update() {
         CheckTimeTask();
         CheckFrameTask();
+
+        if (recTidLst.Count > 0) {
+            RecyleTid();
+        }
     }
     private void CheckTimeTask() {
         for (int tmpIndex = 0; tmpIndex < tmpTimerLst.Count; tmpIndex++) {
@@ -115,6 +122,7 @@ public class PETimer {
                     try {
                         taskTimerLst.RemoveAt(index);
                         index--;
+                        recTidLst.Add(task.tid);
                     }
                     catch (Exception e) {
                         LogInfo(e.ToString());
@@ -159,6 +167,7 @@ public class PETimer {
                     try {
                         taskFramerLst.RemoveAt(index);
                         index--;
+                        recTidLst.Add(task.tid);
                     }
                     catch (Exception e) {
                         LogInfo(e.ToString());
@@ -168,7 +177,7 @@ public class PETimer {
                     if (task.count != 0) {
                         task.count -= 1;
                     }
-                    task.destFrame = task.destFrame + task.value;
+                    task.destFrame = task.destFrame + task.delay;
                 }
             }
         }
@@ -252,12 +261,10 @@ public class PETimer {
             PETimeTask task = taskTimerLst[i];
             if (task.tid == tid) {
                 taskTimerLst.RemoveAt(i);
-                if (task.count != 0) {
-                    for (int j = 0; j < tidLst.Count; j++) {
-                        if (tidLst[j] == tid) {
-                            tidLst.RemoveAt(j);
-                            break;
-                        }
+                for (int j = 0; j < tidLst.Count; j++) {
+                    if (tidLst[j] == tid) {
+                        tidLst.RemoveAt(j);
+                        break;
                     }
                 }
                 exist = true;
@@ -269,6 +276,12 @@ public class PETimer {
                 PETimeTask task = tmpTimerLst[i];
                 if (task.tid == tid) {
                     tmpTimerLst.RemoveAt(i);
+                    for (int j = 0; j < tidLst.Count; j++) {
+                        if (tidLst[j] == tid) {
+                            tidLst.RemoveAt(j);
+                            break;
+                        }
+                    }
                     exist = true;
                     break;
                 }
@@ -313,12 +326,10 @@ public class PETimer {
             PEFrameTask task = taskFramerLst[i];
             if (task.tid == tid) {
                 taskFramerLst.RemoveAt(i);
-                if (task.count != 0) {
-                    for (int j = 0; j < tidLst.Count; j++) {
-                        if (tidLst[j] == tid) {
-                            tidLst.RemoveAt(j);
-                            break;
-                        }
+                for (int j = 0; j < tidLst.Count; j++) {
+                    if (tidLst[j] == tid) {
+                        tidLst.RemoveAt(j);
+                        break;
                     }
                 }
                 exist = true;
@@ -330,6 +341,12 @@ public class PETimer {
                 PEFrameTask task = tmpFramerLst[i];
                 if (task.tid == tid) {
                     tmpFramerLst.RemoveAt(i);
+                    for (int j = 0; j < tidLst.Count; j++) {
+                        if (tidLst[j] == tid) {
+                            tidLst.RemoveAt(j);
+                            break;
+                        }
+                    }
                     exist = true;
                     break;
                 }
@@ -386,26 +403,39 @@ public class PETimer {
     private int GetTid() {
         lock (obj) {
             tid += 1;
-            while (true) {
-                //安全代码，以防万一
-                bool used = false;
-                for (int i = 0; i < tidLst.Count; i++) {
-                    if (tid == tidLst[i]) {
-                        used = true;
+
+            //安全代码，以防万一
+            if (tid == int.MaxValue) {
+                while (true) {
+                    bool used = false;
+                    for (int i = 0; i < tidLst.Count; i++) {
+                        if (tid == tidLst[i]) {
+                            used = true;
+                            break;
+                        }
+                    }
+                    if (!used) {
                         break;
                     }
                 }
-                if (!used) {
-                    break;
-                }
-            }
-
-            if (tid == int.MaxValue) {
                 tid = 0;
             }
         }
         return tid;
     }
+    private void RecyleTid() {
+        for (int i = 0; i < recTidLst.Count; i++) {
+            int tid = recTidLst[i];
+            for (int j = 0; j < tidLst.Count; j++) {
+                if (tidLst[j] == tid) {
+                    tidLst.RemoveAt(j);
+                    break;
+                }
+            }
+        }
+        recTidLst.Clear();
+    }
+
     private void LogInfo(string info) {
         if (taskLog != null) {
             taskLog(info);
