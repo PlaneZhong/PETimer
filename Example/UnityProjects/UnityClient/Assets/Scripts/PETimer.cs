@@ -298,8 +298,8 @@ public class PETimer {
         tidLst.Add(tid);
         return tid;
     }
-    public bool ReplaceFrameTask(int tid, Action<int> callback, int frame, int count = 1) {
-        PEFrameTask newTask = new PEFrameTask(tid, callback, frameCounter + frame, frame, count);
+    public bool ReplaceFrameTask(int tid, Action<int> callback, int delay, int count = 1) {
+        PEFrameTask newTask = new PEFrameTask(tid, callback, frameCounter + delay, delay, count);
         bool isRep = false;
         for (int i = 0; i < taskFramerLst.Count; i++) {
             if (taskFramerLst[i].tid == tid) {

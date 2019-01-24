@@ -73,6 +73,8 @@ public class PETimer {
         recTidLst.Clear();
         tmpTimerLst.Clear();
         taskTimerLst.Clear();
+        tmpFramerLst.Clear();
+        taskFramerLst.Clear();
 
         if (interval != 0) {
             srvTimer = new Timer(interval) {
@@ -365,6 +367,8 @@ public class PETimer {
     public void Reset() {
         tid = 0;
         tidLst.Clear();
+        recTidLst.Clear();
+
         tmpTimerLst.Clear();
         taskTimerLst.Clear();
 
