@@ -365,7 +365,6 @@ public class PETimer {
         taskHandle = handle;
     }
     public void Reset() {
-        tid = 0;
         tidLst.Clear();
         recTidLst.Clear();
 
@@ -374,6 +373,12 @@ public class PETimer {
 
         tmpFramerLst.Clear();
         taskFramerLst.Clear();
+
+        tid = 0;
+        frameCounter = 0;
+        taskLog = null;
+        taskHandle = null;
+        srvTimer.Stop();
     }
 
     public DateTime GetLocalDate() {

@@ -12,6 +12,8 @@ using System.Collections.Generic;
 
 namespace ConsoleProjects {
     class Program {
+        private static readonly string obj = "lock";
+
         static void Main(string[] args) {
             Console.WriteLine("Test Start!");
             //Test1();
@@ -51,12 +53,17 @@ namespace ConsoleProjects {
             //设置回调处理器
             pt.SetHandle((Action<int> cb, int tid) => {
                 if (cb != null) {
-                    tpQue.Enqueue(new TaskPack(tid, cb));
+                    lock (obj) {
+                        tpQue.Enqueue(new TaskPack(tid, cb));
+                    }
                 }
             });
             while (true) {
                 if (tpQue.Count > 0) {
-                    TaskPack tp = tpQue.Dequeue();
+                    TaskPack tp = null;
+                    lock (obj) {
+                        tp = tpQue.Dequeue();
+                    }
                     tp.cb(tp.tid);
                 }
             }
