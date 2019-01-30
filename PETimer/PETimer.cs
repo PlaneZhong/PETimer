@@ -54,6 +54,9 @@ public class PETimer {
     private Action<Action<int>, int> taskHandle;
     private Timer srvTimer;
     private static readonly string obj = "lock";
+    private static readonly string lockTmpTimeLst = "lockTmpTime";
+    private static readonly string lockTmpFrameLst = "lockTmpFrame";
+
     private DateTime startDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
     private int tid;
     private List<int> tidLst = new List<int>();
@@ -95,10 +98,14 @@ public class PETimer {
         }
     }
     private void CheckTimeTask() {
-        for (int tmpIndex = 0; tmpIndex < tmpTimerLst.Count; tmpIndex++) {
-            taskTimerLst.Add(tmpTimerLst[tmpIndex]);
+        if (tmpTimerLst.Count > 0) {
+            lock (lockTmpTimeLst) {
+                for (int tmpIndex = 0; tmpIndex < tmpTimerLst.Count; tmpIndex++) {
+                    taskTimerLst.Add(tmpTimerLst[tmpIndex]);
+                }
+                tmpTimerLst.Clear();
+            }
         }
-        tmpTimerLst.Clear();
 
         nowTime = GetUTCMilliseconds();
         for (int index = 0; index < taskTimerLst.Count; index++) {
@@ -140,10 +147,14 @@ public class PETimer {
         }
     }
     private void CheckFrameTask() {
-        for (int tmpIndex = 0; tmpIndex < tmpFramerLst.Count; tmpIndex++) {
-            taskFramerLst.Add(tmpFramerLst[tmpIndex]);
+        if (tmpFramerLst.Count > 0) {
+            lock (lockTmpFrameLst) {
+                for (int tmpIndex = 0; tmpIndex < tmpFramerLst.Count; tmpIndex++) {
+                    taskFramerLst.Add(tmpFramerLst[tmpIndex]);
+                }
+                tmpFramerLst.Clear();
+            }
         }
-        tmpFramerLst.Clear();
 
         frameCounter += 1;
         for (int index = 0; index < taskFramerLst.Count; index++) {
