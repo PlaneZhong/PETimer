@@ -53,7 +53,7 @@ public class PETimer {
     private Action<string> taskLog;
     private Action<Action<int>, int> taskHandle;
     private Timer srvTimer;
-    private static readonly string obj = "lock";
+    private static readonly string lockTid = "lockTid";
     private static readonly string lockTmpTimeLst = "lockTmpTime";
     private static readonly string lockTmpFrameLst = "lockTmpFrame";
 
@@ -65,9 +65,15 @@ public class PETimer {
     private double nowTime;
     private List<PETimeTask> tmpTimerLst = new List<PETimeTask>();
     private List<PETimeTask> taskTimerLst = new List<PETimeTask>();
+    private List<int> tmpDelTimerLst = new List<int>();
+
     private int frameCounter = 0;
     private List<PEFrameTask> tmpFramerLst = new List<PEFrameTask>();
     private List<PEFrameTask> taskFramerLst = new List<PEFrameTask>();
+    private List<int> tmpDelFrameLst = new List<int>();
+
+    private static readonly string lockTmpDelTimeLst = "lockTmpDelTime";
+    private static readonly string lockTmpDelFrameLst = "lockTmpDelFrame";
     #endregion
 
     #region Main Functions
@@ -90,6 +96,7 @@ public class PETimer {
         }
     }
     public void Update() {
+
         CheckTimeTask();
         CheckFrameTask();
 
@@ -97,6 +104,73 @@ public class PETimer {
             RecyleTid();
         }
     }
+    private void DelTimeTask() {
+        bool exist = false;
+        for (int i = 0; i < taskTimerLst.Count; i++) {
+            PETimeTask task = taskTimerLst[i];
+            if (task.tid == tid) {
+                taskTimerLst.RemoveAt(i);
+                for (int j = 0; j < tidLst.Count; j++) {
+                    if (tidLst[j] == tid) {
+                        tidLst.RemoveAt(j);
+                        break;
+                    }
+                }
+                exist = true;
+                break;
+            }
+        }
+        if (!exist) {
+            for (int i = 0; i < tmpTimerLst.Count; i++) {
+                PETimeTask task = tmpTimerLst[i];
+                if (task.tid == tid) {
+                    tmpTimerLst.RemoveAt(i);
+                    for (int j = 0; j < tidLst.Count; j++) {
+                        if (tidLst[j] == tid) {
+                            tidLst.RemoveAt(j);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    private void DelFrameTask() {
+        bool exist = false;
+        for (int i = 0; i < taskFramerLst.Count; i++) {
+            PEFrameTask task = taskFramerLst[i];
+            if (task.tid == tid) {
+                taskFramerLst.RemoveAt(i);
+                for (int j = 0; j < tidLst.Count; j++) {
+                    if (tidLst[j] == tid) {
+                        tidLst.RemoveAt(j);
+                        break;
+                    }
+                }
+                exist = true;
+                break;
+            }
+        }
+        if (!exist) {
+            for (int i = 0; i < tmpFramerLst.Count; i++) {
+                PEFrameTask task = tmpFramerLst[i];
+                if (task.tid == tid) {
+                    tmpFramerLst.RemoveAt(i);
+                    for (int j = 0; j < tidLst.Count; j++) {
+                        if (tidLst[j] == tid) {
+                            tidLst.RemoveAt(j);
+                            break;
+                        }
+                    }
+                    exist = true;
+                    break;
+                }
+            }
+        }
+        return exist;
+    }
+
     private void CheckTimeTask() {
         if (tmpTimerLst.Count > 0) {
             lock (lockTmpTimeLst) {
@@ -221,8 +295,9 @@ public class PETimer {
         }
         int tid = GetTid();
         nowTime = GetUTCMilliseconds();
-        tmpTimerLst.Add(new PETimeTask(tid, callback, nowTime + delay, delay, count));
-        tidLst.Add(tid);
+        lock (lockTmpTimeLst) {
+            tmpTimerLst.Add(new PETimeTask(tid, callback, nowTime + delay, delay, count));
+        }
         return tid;
     }
     public bool ReplaceTimeTask(int tid, Action<int> callback, double delay, PETimeUnit timeUnit = PETimeUnit.Millisecond, int count = 1) {
@@ -269,14 +344,16 @@ public class PETimer {
         return isRep;
     }
     public bool DeleteTimeTask(int tid) {
+        lock () {
+            tmpDelTimerLst.Add(tid);
+        }
+
         bool exist = false;
         for (int i = 0; i < taskTimerLst.Count; i++) {
             PETimeTask task = taskTimerLst[i];
             if (task.tid == tid) {
-                taskTimerLst.RemoveAt(i);
                 for (int j = 0; j < tidLst.Count; j++) {
                     if (tidLst[j] == tid) {
-                        tidLst.RemoveAt(j);
                         break;
                     }
                 }
@@ -288,10 +365,8 @@ public class PETimer {
             for (int i = 0; i < tmpTimerLst.Count; i++) {
                 PETimeTask task = tmpTimerLst[i];
                 if (task.tid == tid) {
-                    tmpTimerLst.RemoveAt(i);
                     for (int j = 0; j < tidLst.Count; j++) {
                         if (tidLst[j] == tid) {
-                            tidLst.RemoveAt(j);
                             break;
                         }
                     }
@@ -307,7 +382,9 @@ public class PETimer {
     #region FrameTask
     public int AddFrameTask(Action<int> callback, int frame, int count = 1) {
         int tid = GetTid();
-        tmpFramerLst.Add(new PEFrameTask(tid, callback, frameCounter + frame, frame, count));
+        lock (lockTmpFrameLst) {
+            tmpFramerLst.Add(new PEFrameTask(tid, callback, frameCounter + frame, frame, count));
+        }
         tidLst.Add(tid);
         return tid;
     }
@@ -421,7 +498,7 @@ public class PETimer {
 
     #region Tool Methonds
     private int GetTid() {
-        lock (obj) {
+        lock (lockTid) {
             tid += 1;
 
             //安全代码，以防万一
@@ -440,16 +517,19 @@ public class PETimer {
                 }
                 tid = 0;
             }
+            tidLst.Add(tid);
         }
         return tid;
     }
     private void RecyleTid() {
         for (int i = 0; i < recTidLst.Count; i++) {
             int tid = recTidLst[i];
-            for (int j = 0; j < tidLst.Count; j++) {
-                if (tidLst[j] == tid) {
-                    tidLst.RemoveAt(j);
-                    break;
+            lock (lockTid) {
+                for (int j = 0; j < tidLst.Count; j++) {
+                    if (tidLst[j] == tid) {
+                        tidLst.RemoveAt(j);
+                        break;
+                    }
                 }
             }
         }
