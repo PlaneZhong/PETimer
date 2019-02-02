@@ -349,6 +349,7 @@ public class PETimer {
         }
 
         bool exist = false;
+        /*
         for (int i = 0; i < taskTimeLst.Count; i++) {
             PETimeTask task = taskTimeLst[i];
             if (task.tid == tid) {
@@ -375,6 +376,7 @@ public class PETimer {
                 }
             }
         }
+        */
         return exist;
     }
     #endregion
@@ -385,7 +387,6 @@ public class PETimer {
         lock (lockTmpFrameLst) {
             tmpFrameLst.Add(new PEFrameTask(tid, callback, frameCounter + frame, frame, count));
         }
-        tidLst.Add(tid);
         return tid;
     }
     public bool ReplaceFrameTask(int tid, Action<int> callback, int frame, int count = 1) {
@@ -411,7 +412,12 @@ public class PETimer {
         return isRep;
     }
     public bool DeleteFrameTask(int tid) {
+        lock (lockTmpDelFrameLst) {
+            tmpDelFrameLst.Add(tid);
+        }
+
         bool exist = false;
+        /*
         for (int i = 0; i < taskFrameLst.Count; i++) {
             PEFrameTask task = taskFrameLst[i];
             if (task.tid == tid) {
@@ -442,6 +448,7 @@ public class PETimer {
                 }
             }
         }
+        */
         return exist;
     }
     #endregion
