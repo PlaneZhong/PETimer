@@ -46,11 +46,13 @@ namespace ConsoleProjects {
                 Console.WriteLine("LogInfo:" + info);
             });
 
-            pt.AddTimeTask((int tid) => {
+
+            int id = pt.AddTimeTask((int tid) => {
                 Console.WriteLine("Process线程ID:{0}", Thread.CurrentThread.ManagedThreadId.ToString());
-            }, 10, PETimeUnit.Millisecond, 0);
+            }, 3000, PETimeUnit.Millisecond, 0);
 
             //设置回调处理器
+            /*
             pt.SetHandle((Action<int> cb, int tid) => {
                 if (cb != null) {
                     lock (obj) {
@@ -58,7 +60,14 @@ namespace ConsoleProjects {
                     }
                 }
             });
+            */
             while (true) {
+                string ipt = Console.ReadLine();
+                if (ipt == "a") {
+                    pt.DeleteTimeTask(id);
+                }
+
+
                 if (tpQue.Count > 0) {
                     TaskPack tp = null;
                     lock (obj) {
