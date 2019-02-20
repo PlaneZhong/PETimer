@@ -80,7 +80,7 @@ public class PETimer {
                             isDel = true;
                             taskTimeLst.RemoveAt(j);
                             recTidLst.Add(delTid);
-                            LogInfo("Del1 线程ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
+                            //LogInfo("Del taskTimeLst ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
                             break;
                         }
                     }
@@ -93,7 +93,7 @@ public class PETimer {
                         if (task.tid == delTid) {
                             tmpTimeLst.RemoveAt(j);
                             recTidLst.Add(delTid);
-                            LogInfo("Del2 线程ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
+                            //LogInfo("Del tmpTimeLst ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
                             break;
                         }
                     }
@@ -262,7 +262,7 @@ public class PETimer {
     public void DeleteTimeTask(int tid) {
         lock (lockTime) {
             tmpDelTimeLst.Add(tid);
-            LogInfo("TmpDel线程ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
+            //LogInfo("TmpDel ID:" + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
         }
         /*
          bool exist = false;
@@ -531,6 +531,7 @@ public class PETimer {
             return time.ToString();
         }
     }
+    #endregion
 
      class PETimeTask {
         public int tid;
@@ -563,7 +564,6 @@ public class PETimer {
             this.count = count;
         }
     }
-    #endregion
 }
 
 public enum PETimeUnit {
