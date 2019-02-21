@@ -490,13 +490,13 @@ public class PETimer {
                     }
                 }
                 if (!used) {
+                    tidLst.Add(tid);
                     break;
                 }
                 else {
                     tid += 1;
                 }
             }
-            tidLst.Add(tid);
         }
 
         return tid;
@@ -533,7 +533,7 @@ public class PETimer {
     }
     #endregion
 
-     class PETimeTask {
+    class PETimeTask {
         public int tid;
         public Action<int> callback;
         public double destTime;//单位：毫秒
@@ -549,7 +549,7 @@ public class PETimer {
         }
     }
 
-     class PEFrameTask {
+    class PEFrameTask {
         public int tid;
         public Action<int> callback;
         public int destFrame;
