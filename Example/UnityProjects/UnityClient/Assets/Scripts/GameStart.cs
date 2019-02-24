@@ -41,10 +41,7 @@ public class GameStart : MonoBehaviour {
 
         //定时删除
         if (Input.GetKeyDown(KeyCode.D)) {
-            bool succ = pt.DeleteTimeTask(tempID);
-            if (succ) {
-                Debug.Log("删除成功");
-            }
+            pt.DeleteTimeTask(tempID);
         }
     }
 
