@@ -98,6 +98,7 @@ public class PETimer {
                         }
                     }
                 }
+                tmpDelTimeLst.Clear();
             }
         }
     }
@@ -129,6 +130,7 @@ public class PETimer {
                         }
                     }
                 }
+                tmpDelFrameLst.Clear();
             }
         }
     }
